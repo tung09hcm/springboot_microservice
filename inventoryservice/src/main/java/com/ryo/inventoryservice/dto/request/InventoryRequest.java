@@ -1,2 +1,4 @@
-package com.ryo.inventoryservice.dto.request;public class InventoryRequest {
+package com.ryo.inventoryservice.dto.request;
+
+public class InventoryRequest {
 }

@@ -1,5 +1,6 @@
 package com.ryo.microservice.orderservice.service;
 
+import com.ryo.microservice.orderservice.client.InventoryClient;
 import com.ryo.microservice.orderservice.dto.request.OrderRequest;
 import com.ryo.microservice.orderservice.model.Order;
 import com.ryo.microservice.orderservice.repository.OrderRepository;
@@ -16,14 +17,23 @@ import java.util.UUID;
 public class OrderService {
 
     OrderRepository orderRepository;
+    InventoryClient inventoryClient;
 
     public void placeOrder(OrderRequest request){
-        orderRepository.save(Order.builder()
-                        .orderNumber(UUID.randomUUID().toString())
-                        .price(request.price())
-                        .quantity(request.quantity())
-                        .skuCode(request.skuCode())
-                .build());
+
+        if(inventoryClient.isInStock(request.skuCode(), request.quantity())){
+            orderRepository.save(Order.builder()
+                    .orderNumber(UUID.randomUUID().toString())
+                    .price(request.price())
+                    .quantity(request.quantity())
+                    .skuCode(request.skuCode())
+                    .build());
+        }
+        else{
+            throw new RuntimeException();
+        }
+
+
         
     }
 
