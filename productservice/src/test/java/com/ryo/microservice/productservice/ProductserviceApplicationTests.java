@@ -1,5 +1,6 @@
 package com.ryo.microservice.productservice;
 
+import com.ryo.microservice.productservice.dto.request.ProductRequest;
 import io.restassured.RestAssured;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,8 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.MongoDBContainer;
+
+import java.math.BigDecimal;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -31,25 +34,25 @@ class ProductserviceApplicationTests {
 	}
 
 	@Test
-	void shouldCreateProduct() {
-		String requestBody = """
-				{
-				    "name": "book2",
-				    "description": "book2-description",
-				    "price": 123
-				}
-				""";
+	void shouldCreateProduct() throws Exception {
+		ProductRequest productRequest = getProductRequest();
+
 		RestAssured.given()
 				.contentType("application/json")
-				.body(requestBody)
+				.body(productRequest)
 				.when()
 				.post("/api/product")
 				.then()
+				.log().all()
 				.statusCode(201)
 				.body("id", Matchers.notNullValue())
-				.body("name", Matchers.equalTo("book2"))
-				.body("description", Matchers.equalTo("book2-description"))
-				.body("price", Matchers.equalTo(123));
+				.body("name", Matchers.equalTo(productRequest.name()))
+				.body("description", Matchers.equalTo(productRequest.description()))
+				.body("price", Matchers.is(productRequest.price().intValueExact()));
+	}
+
+	private ProductRequest getProductRequest() {
+		return new ProductRequest("iPhone 13", "iPhone 13", BigDecimal.valueOf(1200));
 	}
 
 }
